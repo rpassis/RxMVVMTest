@@ -21,10 +21,12 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        viewModel.username.filter { (username) -> Bool in
-            return username?.count > 0 ?? false
-        }.bind(to: loginButton.rx.isEnabled)
-}
+        Observable
+        .combineLatest(viewModel.username, viewModel.password)
+        .map { (username, password) -> Bool in
+            guard let u = username, let p = password else { return false }
+            return u.count > 5 && p.count > 5
+        }.bind(to: loginButton.rx.isEnabled).disposed(by: bag)
     }
     
     override func didReceiveMemoryWarning() {
@@ -39,6 +41,13 @@ class ViewController: UIViewController {
         } else if sender == passwordTextField {
             viewModel.didUpdatePassword(value)
         }
+    }
+    
+    @IBAction func login() {
+        let vc = Storyboard.Main.instantiate(DetailViewController.self)
+        let vm = viewModel.detailViewModel()
+        vc.viewModel = vm
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
 

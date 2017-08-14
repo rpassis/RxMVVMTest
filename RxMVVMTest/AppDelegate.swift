@@ -8,6 +8,7 @@
 
 import UIKit
 import ReSwift
+import RxSwift
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -19,15 +20,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         
-        let sb = UIStoryboard(name: "Main", bundle: nil)
-        guard let vc = sb.instantiateInitialViewController() as? ViewController else {
-            fatalError()
-        }
+        let vc = Storyboard.Main.instantiate(ViewController.self)
         let vm = ViewModel(store: store)
         vc.viewModel = vm
+        let nc = UINavigationController(rootViewController: vc)
         window = UIWindow(frame: UIScreen.main.bounds)
-        window?.rootViewController = vc
+        window?.rootViewController = nc
         window?.makeKeyAndVisible()
+        _ = Observable<Int>
+            .interval(1, scheduler: MainScheduler.instance)
+            .subscribe({ (i) in
+                print("Resource count \(RxSwift.Resources.total)")
+            })
         return true
     }
 
